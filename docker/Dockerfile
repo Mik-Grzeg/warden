@@ -1,20 +1,24 @@
-ARG DEBUG=
-
 FROM rust:1.72-bookworm as builder
 
+ARG TARGETPLATFORM
+ARG BIN_NAME
+ARG PROJECT_DIR
 
 WORKDIR /app
 
-COPY ["warden/Cargo.lock", "warden/Cargo.toml"]
+RUN apt-get update \
+    && apt-get upgrade -y
 
-RUN mkdir -p src && touch src/main.rs && cargo fetch && rm -rf src
+COPY ./${PROJECT_DIR} .
 
-COPY . warden/src/
-RUN cargo build
+RUN --mount=type=cache,target=/usr/local/cargo/registry,id=${TARGETPLATFORM} --mount=type=cache,target=/app/target,id=${TARGETPLATFORM} \
+    cargo build --release && \
+    mv /app/target/release/${BIN_NAME} /${BIN_NAME}
 
 FROM debian:bookworm-slim AS runtime
+ARG BIN_NAME
+ENV BIN_NAME_ENV=${BIN_NAME}
 
-WORKDIR /APP
-COPY --from=builder /app/target/debug/warden /app/warden
+COPY --from=builder /${BIN_NAME} /app/${BIN_NAME}
 
-ENTRYPOINT [ "/app/warden" ]
+ENTRYPOINT /app/${BIN_NAME_ENV}

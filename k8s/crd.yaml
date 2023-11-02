@@ -1,0 +1,49 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: guardedapplications.kube.rs
+spec:
+  group: kube.rs
+  names:
+    categories: []
+    kind: GuardedApplication
+    plural: guardedapplications
+    shortNames:
+    - app
+    singular: guardedapplication
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns: []
+    name: v1
+    schema:
+      openAPIV3Schema:
+        description: Auto-generated derived type for GuardedApplicationSpec via `CustomResource`
+        properties:
+          spec:
+            properties:
+              replicas:
+                format: uint
+                minimum: 0.0
+                type: integer
+              title:
+                type: string
+            required:
+            - replicas
+            - title
+            type: object
+          status:
+            nullable: true
+            properties:
+              replicas_up_to_date:
+                type: boolean
+            required:
+            - replicas_up_to_date
+            type: object
+        required:
+        - spec
+        title: GuardedApplication
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

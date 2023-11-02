@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warden-operator
+  labels:
+    app: warden-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: warden-operator
+  template:
+    metadata:
+      labels:
+        app: warden-operator
+    spec:
+      serviceAccountName: warden-operator
+      containers:
+      - name: warden-operator
+        image: warden-operator
+        env:
+          - name: RUST_LOG
+            value: debug
+
+        livenessProbe:
+         httpGet:
+           path: /health
+           port: 8000
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: warden-operator
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: warden-operator
+rules:
+  - apiGroups: ["kube.rs"]
+    resources:
+      - guardedapplications
+      - guardedapplications/status
+    verbs:
+      - create
+      - list
+      - watch
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - create
+      - update
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: warden-operator
+subjects:
+- kind: ServiceAccount
+  namespace: default
+  name: warden-operator
+roleRef:
+  kind: ClusterRole
+  name: warden-operator
+  apiGroup: rbac.authorization.k8s.io

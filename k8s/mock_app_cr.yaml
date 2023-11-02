@@ -1,0 +1,11 @@
+
+apiVersion: kube.rs/v1
+kind: GuardedApplication
+metadata:
+  name: test-operator
+  namespace: default
+  labels:
+    app: warden
+spec:
+  replicas: 1
+  title: test-operator
